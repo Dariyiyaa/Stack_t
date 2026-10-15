@@ -1,32 +1,50 @@
 #include <stdio.h>
+#include "hzhz.h"
 #include "StackInit.cpp"
-#include "StackDump.cpp"
+#include "assert.h"
 
 int main()
 {
+    
+    putchar('\n');
+    assert(stdout);
+
     Stack_t stk1 = {};
     size_t capacity = 5;
 
-    StackInit(&stk1, capacity);
-
-    StackPush(&stk1, 10);
-    StackPush(&stk1, 20);
-    StackPush(&stk1, 30);
-    StackPush(&stk1, 40);
-    StackPush(&stk1, 50);
-    StackPush(&stk1, 60);
-    StackPush(&stk1, 70);
-    StackPush(&stk1, 80);
-    StackPush(&stk1, 90);
-    StackPush(&stk1, 100);
-
+    struct errorReturn ret_val = {};
     
+    putchar('\n');
+    
+    ReturnValueCheck(&(ret_val = StackInit(&stk1, capacity)));
+
+    putchar('o');
+
     StackDump(&stk1);
 
-    printf("%f", StackPop(&stk1));
-    
+    ReturnValueCheck(&(ret_val = StackPush(&stk1, 10)));
+    ReturnValueCheck(&(ret_val = StackPush(&stk1, 20)));
+    ReturnValueCheck(&(ret_val = StackPush(&stk1, 30)));
+    ReturnValueCheck(&(ret_val = StackPush(&stk1, 40)));
+    ReturnValueCheck(&(ret_val = StackPush(&stk1, 50)));
+    ReturnValueCheck(&(ret_val = StackPush(&stk1, 60)));
+
+    StackDump(&stk1);
+
+    // double a = 0;
+    // ReturnValueCheck(&(ret_val = StackPush(&stk1, 60)));
+    // ReturnValueCheck(&(ret_val = StackPop(&stk1, &a)));
+    // ReturnValueCheck(&(ret_val = StackPush(&stk1, 70)));
+    // ReturnValueCheck(&(ret_val = StackPop(&stk1, &a)));
+    // ReturnValueCheck(&(ret_val = StackPush(&stk1, 70)));
+    // ReturnValueCheck(&(ret_val = StackPop(&stk1, &a)));
+    // ReturnValueCheck(&(ret_val = StackPush(&stk1, 70)));
+    // ReturnValueCheck(&(ret_val = StackPop(&stk1, &a)));
+
+
+    // printf("%f", a);
     
 
-    // StackDestroy(stk1);
+    StackDestroy(&stk1);
     
 }

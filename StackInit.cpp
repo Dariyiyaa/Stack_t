@@ -1,91 +1,233 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "stack.cpp"
+#include "hzhz.h"
+#include "return.cpp"
 
-int    StackInit(Stack_t* stk, size_t capacity);
-int    StackPush(Stack_t* stk, double value);
-double StackPop(Stack_t* stk);
-int    ResizeStack(Stack_t* stk, size_t new_capacity);
-int    StackExpand(Stack_t* stk);
-int    StackShrink(Stack_t* stk);
-int    StackDump(Stack_t* stk);
+#define SHRINK_FACTOR 4
+#define EXPAND_FACTOR 2
 
 
-int StackDump(Stack_t* stk)
+#define CREATE_RETURNING_VALUE(errorCode){  \
+    struct errorReturn ret_val= {};         \
+    ret_val.error = errorCode;              \
+    ret_val.line = __LINE__;                \
+    ret_val.file_name = __FILE_NAME__;      \
+    return ret_val;                         \
+                                            \
+}
+
+
+errorReturn FillStack(Stack_t* const stk, size_t old_capacity, size_t new_capacity)
 {
+    if (stk == NULL)
+    {
+        CREATE_RETURNING_VALUE(NullStackPointer)
+    }
+    
+    if(stk -> data == NULL)
+    {
+        CREATE_RETURNING_VALUE(NullDataPointer)
+    }
+
+    *(stk -> data) = 0xDEAD;
+    for(size_t i = old_capacity; i < new_capacity - 1; i++)
+    {
+        *(stk -> data + i) = 0x6767676767;
+    } 
+    *(stk -> data + new_capacity - 1) = 0xDEAD;
+
+    CREATE_RETURNING_VALUE(Success)
+}
+
+errorReturn StuckVerify(Stack_t* const stk)
+{
+    if (stk == NULL)
+    {   
+        CREATE_RETURNING_VALUE(NullStackPointer)                       
+    }
+
+    if (stk -> data == NULL)                
+    {                              
+        CREATE_RETURNING_VALUE(NullDataPointer)        
+    } 
+
+    if (stk -> capacity < stk -> size)
+    {
+        CREATE_RETURNING_VALUE(CapacityIsSmallerThanSize)
+    }
+
+    CREATE_RETURNING_VALUE(Success)
+}
+
+
+errorReturn StackDump(Stack_t* const stk)
+{  
+    
+    if (stk == NULL)                
+    {                              
+        CREATE_RETURNING_VALUE(NullStackPointer)        
+    }
+
     fprintf(stderr, "capacity = %lld\n", stk -> capacity);
     fprintf(stderr, "size = %lld\n", stk -> size);
 
     fprintf(stderr, "Data elements\n{\n");
-    for (size_t i = 0; i < stk -> size; i++)
+
+    for (size_t i = 0; i < stk -> capacity; i++)
     {
-        fprintf(stderr, "Index: %lld, Position: %p, Value: %f\n", i, stk -> data + i,  stk -> data[i]);
+        fprintf(stderr, "Index: %lld, Position: %p, Value: %f\n", 
+            i, 
+            stk -> data + i,  
+            stk -> data[i]);
     }
+
     fprintf(stderr, "}\n");
 
-    return 0;
+    CREATE_RETURNING_VALUE(Success)
 }
 
 
-int StackInit(Stack_t* stk, size_t capacity)
-{
+errorReturn StackInit(Stack_t* const stk, size_t const capacity)
+{   
+    if (stk == NULL)                
+    {   
+        CREATE_RETURNING_VALUE(NullStackPointer)  
+    }
+
+    if (capacity < stk -> size)
+    {
+        CREATE_RETURNING_VALUE(NullDataPointer)
+    }
+
     stk -> data = (double*)calloc(capacity, sizeof(double*));
+    
+    if (stk -> data == NULL)                
+    {                           
+        CREATE_RETURNING_VALUE(NullStackPointer)  
+    } 
+
     stk -> capacity = capacity;
-    stk -> size = 0;
+    stk -> size = 1;
 
-    return 0;
-} 
+    FillStack(stk, 0, capacity);
+    
+    CREATE_RETURNING_VALUE(Success)  
+}
 
-
-int ResizeStack(Stack_t* stk, size_t new_capacity)
+errorReturn ResizeStack(Stack_t* const stk, size_t const new_capacity)
 {
-    stk -> data = (double*)realloc(stk -> data, new_capacity * sizeof(double));
+    if (stk == NULL)                
+    {                             
+        CREATE_RETURNING_VALUE(NullStackPointer)         
+    }
+    
+    size_t old_capacity = stk -> capacity;
+
+    double* temp_memory = (double*)realloc(stk -> data, new_capacity * sizeof(double));
+    
+    if (temp_memory == NULL)
+    {
+        CREATE_RETURNING_VALUE(CantAllocateMemory)  
+    }
+
+    if (stk -> data == NULL)                
+    {                             
+        CREATE_RETURNING_VALUE(NullDataPointer)      
+    } 
+
+    stk -> data = temp_memory;
     stk -> capacity = new_capacity;
 
-    return 0;
+    FillStack(stk, new_capacity - old_capacity, new_capacity);
+
+    CREATE_RETURNING_VALUE(Success)
 }
 
 
-int StackExpand(Stack_t* stk)
+errorReturn StackExpand(Stack_t* const stk)
 {
-    size_t new_capacity = (stk -> capacity) * 2; 
+    if (stk == NULL)                
+    {                            
+        CREATE_RETURNING_VALUE(NullStackPointer)         
+    }
+
+    size_t new_capacity = (stk -> capacity) * EXPAND_FACTOR; 
+
+    if (new_capacity < stk -> size)
+    {
+        CREATE_RETURNING_VALUE(CapacityIsSmallerThanSize) 
+    }    
+
     stk -> capacity = new_capacity;
     ResizeStack(stk, new_capacity);
 
-    return 0;
+    CREATE_RETURNING_VALUE(Success) 
 }
 
-int StackShrink(Stack_t* stk)
+errorReturn StackShrink(Stack_t* const stk)
 {
+    if (stk == NULL)                
+    {                              
+        CREATE_RETURNING_VALUE(NullStackPointer)       
+    }
+
     ResizeStack(stk, stk -> size);
 
-    return 0;
+    CREATE_RETURNING_VALUE(Success) 
 }
 
 
-int StackPush(Stack_t* stk, double value)
+errorReturn StackPush(Stack_t* const stk, const double element)
 {
+    if (stk == NULL)                
+    {                              
+        CREATE_RETURNING_VALUE(NullStackPointer)         
+    }
 
-    if(stk -> size == stk -> capacity)
+    if(stk -> size == stk -> capacity - 1)
     {
         StackExpand(stk);
     }
 
-    stk -> data[(stk -> size)++] = value;
+
+    stk -> data[(stk -> size)++] = element;
 
 
-    return 0;
+    CREATE_RETURNING_VALUE(Success) 
 }
 
 
-double StackPop(Stack_t* stk)
+errorReturn StackPop(Stack_t* const stk, double* const ret_element)
 {
-    double ret_value = stk -> data[--(stk -> size)];
+    if (stk == NULL)                
+    {                             
+        CREATE_RETURNING_VALUE(NullStackPointer)          
+    }
 
-    if(stk -> capacity > 2 && stk -> size <= stk -> capacity / 2)
+    *ret_element = stk -> data[--(stk -> size)];
+
+    if(stk -> capacity > SHRINK_FACTOR && stk -> size <= stk -> capacity / SHRINK_FACTOR)
     {
         StackShrink(stk);
     }
 
-    return ret_value;
+    CREATE_RETURNING_VALUE(Success) 
+}
+
+errorReturn StackDestroy(Stack_t* const stk)
+{
+    if (stk == NULL)                
+    {                           
+        CREATE_RETURNING_VALUE(NullStackPointer)            
+    }
+
+    if (stk -> data == NULL)                
+    {                             
+        CREATE_RETURNING_VALUE(NullDataPointer)         
+    } 
+
+    free(stk -> data);
+
+    CREATE_RETURNING_VALUE(Success) 
+
 }
