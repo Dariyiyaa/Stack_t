@@ -31,8 +31,11 @@ void ReturnValueCheck(struct errorReturn* ret_val)
             break;
         
         case CapacityIsSmallerThanSize:
-            fprintf(stderr, "The Capacity is smaller than the Size at line %d, in file %s", ret_val -> line, ret_val -> file_name);
+            fprintf(stderr, "The Capacity is smaller than the Size at line %d, in file %s\n", ret_val -> line, ret_val -> file_name);
             break;
+
+        case NoElementsLeft:
+            fprintf(stderr, "Nothing left to pop at line %d, in file %s\n", ret_val -> line, ret_val -> file_name);
 
         default:
             break;

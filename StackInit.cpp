@@ -7,15 +7,6 @@
 #define EXPAND_FACTOR 2
 
 
-#define CREATE_RETURNING_VALUE(errorCode){  \
-    struct errorReturn ret_val= {};         \
-    ret_val.error = errorCode;              \
-    ret_val.line = __LINE__;                \
-    ret_val.file_name = __FILE_NAME__;      \
-    return ret_val;                         \
-                                            \
-}
-
 
 errorReturn FillStack(Stack_t* const stk, size_t old_capacity, size_t new_capacity)
 {
@@ -29,11 +20,12 @@ errorReturn FillStack(Stack_t* const stk, size_t old_capacity, size_t new_capaci
         CREATE_RETURNING_VALUE(NullDataPointer)
     }
 
-    *(stk -> data) = 0xDEAD;
-    for(size_t i = old_capacity; i < new_capacity - 1; i++)
+    for(size_t i = new_capacity - old_capacity; i < new_capacity - 1; i++)
     {
         *(stk -> data + i) = 0x6767676767;
     } 
+    
+    *(stk -> data) = 0xDEAD;
     *(stk -> data + new_capacity - 1) = 0xDEAD;
 
     CREATE_RETURNING_VALUE(Success)
@@ -83,6 +75,7 @@ errorReturn StackDump(Stack_t* const stk)
 
     fprintf(stderr, "}\n");
 
+
     CREATE_RETURNING_VALUE(Success)
 }
 
@@ -109,7 +102,9 @@ errorReturn StackInit(Stack_t* const stk, size_t const capacity)
     stk -> capacity = capacity;
     stk -> size = 1;
 
-    FillStack(stk, 0, capacity);
+    FillStack(stk, capacity, capacity);
+    // StackDump(stk);
+
     
     CREATE_RETURNING_VALUE(Success)  
 }
@@ -138,7 +133,7 @@ errorReturn ResizeStack(Stack_t* const stk, size_t const new_capacity)
     stk -> data = temp_memory;
     stk -> capacity = new_capacity;
 
-    FillStack(stk, new_capacity - old_capacity, new_capacity);
+    FillStack(stk, old_capacity, new_capacity);
 
     CREATE_RETURNING_VALUE(Success)
 }
@@ -158,9 +153,10 @@ errorReturn StackExpand(Stack_t* const stk)
         CREATE_RETURNING_VALUE(CapacityIsSmallerThanSize) 
     }    
 
-    stk -> capacity = new_capacity;
+    
     ResizeStack(stk, new_capacity);
 
+    stk -> capacity = new_capacity;
     CREATE_RETURNING_VALUE(Success) 
 }
 
@@ -204,7 +200,14 @@ errorReturn StackPop(Stack_t* const stk, double* const ret_element)
         CREATE_RETURNING_VALUE(NullStackPointer)          
     }
 
+    if (stk -> capacity == 2)
+    {
+        CREATE_RETURNING_VALUE(NoElementsLeft);
+    }
+
     *ret_element = stk -> data[--(stk -> size)];
+
+    stk -> data[(stk -> size)] = 0x6767676767;
 
     if(stk -> capacity > SHRINK_FACTOR && stk -> size <= stk -> capacity / SHRINK_FACTOR)
     {
