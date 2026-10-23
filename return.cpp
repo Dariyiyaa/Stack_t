@@ -36,6 +36,11 @@ void ReturnValueCheck(struct errorReturn* ret_val)
 
         case NoElementsLeft:
             fprintf(stderr, "Nothing left to pop at line %d, in file %s\n", ret_val -> line, ret_val -> file_name);
+            break;
+            
+        case  ArgumentsHasntMatched:
+            fprintf(stderr, "Wrong input from File at line %d, in file %s", ret_val -> line, ret_val -> file_name);
+            break;
 
         default:
             break;

@@ -1,4 +1,10 @@
+#ifndef ERROR
+
+#define ERROR
+
 #include <stdio.h>
+#include "stddef.h"
+
 
 #define CREATE_RETURNING_VALUE(errorCode){  \
     struct errorReturn ret_val= {};         \
@@ -9,11 +15,6 @@
                                             \
 }
 
-struct File
-{
-    FILE* ptr;
-    const char* name;
-};
 
 enum Error
 {
@@ -32,8 +33,6 @@ enum Error
 
     //AssErrors
 
-    WrongInput                  =   7,
-
 
 };
 
@@ -44,3 +43,5 @@ struct errorReturn
     int line;
     const char* file_name;
 };
+
+#endif
