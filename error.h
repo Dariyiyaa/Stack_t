@@ -6,6 +6,7 @@
 #include "stddef.h"
 
 
+
 #define CREATE_RETURNING_VALUE(errorCode){  \
     struct errorReturn ret_val= {};         \
     ret_val.error = errorCode;              \
@@ -15,6 +16,7 @@
                                             \
 }
 
+void ReturnValueCheck(struct errorReturn* ret_val);
 
 enum Error
 {
@@ -30,6 +32,7 @@ enum Error
     //FileErrors
 
     ArgumentsHasntMatched       =   6,
+    NullFilePointer             =   7,
 
     //AssErrors
 
